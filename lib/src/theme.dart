@@ -65,7 +65,7 @@ final class PagedDataTableThemeData {
     this.borderRadius = const BorderRadius.all(Radius.circular(4.0)),
     this.elevation = 0.0,
     this.cellBorderSide = const Border(
-      top: BorderSide(color: Color(0xFFD6D6D6), width: 1),
+      bottom: BorderSide(color: Color(0xFFD6D6D6), width: 1),
     ),
     this.headerHeight = 56.0,
     this.footerHeight = 56.0,
