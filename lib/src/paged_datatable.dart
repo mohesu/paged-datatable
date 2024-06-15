@@ -60,6 +60,11 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
   /// If null, the default footer will be displayed.
   final Widget? footer;
 
+  /// A custom widget to build in the footer, aligned to the left.
+  ///
+  /// Navigation widgets remain untouched.
+  final Widget Function(List<T>? selectedRows)? footerChild;
+
   /// Additional widget to add at the right of the filter bar.
   final Widget? filterBarChild;
 
@@ -78,6 +83,7 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
     this.footer,
     this.filterBarChild,
     this.filters = const <TableFilter>[],
+    this.footerChild,
     super.key,
   });
 
@@ -185,7 +191,11 @@ final class _PagedDataTableState<K extends Comparable<K>, T>
                 const Divider(height: 0, color: Color(0xFFD6D6D6)),
                 SizedBox(
                   height: theme.footerHeight,
-                  child: widget.footer ?? DefaultFooter<K, T>(),
+                  child: widget.footer ??
+                      DefaultFooter<K, T>(
+                        child: widget.footerChild
+                            ?.call(tableController.selectedItems),
+                      ),
                 ),
               ],
             );

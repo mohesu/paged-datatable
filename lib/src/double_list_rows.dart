@@ -8,6 +8,8 @@ class _DoubleListRows<K extends Comparable<K>, T> extends StatefulWidget {
   final PagedDataTableController<K, T> controller;
   final PagedDataTableConfiguration configuration;
   final List<double> sizes;
+  final Widget? prototypeItem;
+  final double? cacheExtent;
 
   const _DoubleListRows({
     required this.columns,
@@ -16,6 +18,8 @@ class _DoubleListRows<K extends Comparable<K>, T> extends StatefulWidget {
     required this.controller,
     required this.configuration,
     required this.sizes,
+    this.prototypeItem,
+    this.cacheExtent,
   });
 
   @override
@@ -43,7 +47,6 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
   @override
   Widget build(BuildContext context) {
     final theme = PagedDataTableTheme.of(context);
-
     return DefaultTextStyle(
       style: theme.cellTextStyle,
       child: ScrollConfiguration(
@@ -59,12 +62,20 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
                   width: widget.sizes
                       .take(widget.fixedColumnCount)
                       .fold(0.0, (a, b) => a! + b),
-                  child: ListView.separated(
+                  child: ListView.builder(
                     primary: false,
                     controller: fixedController,
                     itemCount: widget.controller._totalItems,
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 0, color: Color(0xFFD6D6D6)),
+                    prototypeItem: widget.prototypeItem ??
+                        (widget.controller._totalItems > 0
+                            ? _FixedPartRow<K, T>(
+                                index: 0,
+                                fixedColumnCount: widget.fixedColumnCount,
+                                sizes: widget.sizes,
+                                columns: widget.columns,
+                              )
+                            : null),
+                    cacheExtent: widget.cacheExtent,
                     itemBuilder: (context, index) => _FixedPartRow<K, T>(
                       index: index,
                       fixedColumnCount: widget.fixedColumnCount,
@@ -83,14 +94,24 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
                       children: [
                         ConstrainedBox(
                           constraints: BoxConstraints(
-                              maxWidth: widget.sizes
-                                  .skip(widget.fixedColumnCount)
-                                  .fold(0.0, (a, b) => a + b)),
-                          child: ListView.separated(
+                            maxWidth: widget.sizes
+                                .skip(widget.fixedColumnCount)
+                                .fold(0.0, (a, b) => a + b),
+                          ),
+                          child: ListView.builder(
                             controller: normalController,
                             itemCount: widget.controller._totalItems,
-                            separatorBuilder: (_, __) => const Divider(
-                                height: 0, color: Color(0xFFD6D6D6)),
+                            prototypeItem: widget.prototypeItem ??
+                                (widget.controller._totalItems > 0
+                                    ? _VariablePartRow<K, T>(
+                                        sizes: widget.sizes,
+                                        index: 0,
+                                        fixedColumnCount:
+                                            widget.fixedColumnCount,
+                                        columns: widget.columns,
+                                      )
+                                    : null),
+                            cacheExtent: widget.cacheExtent,
                             itemBuilder: (context, index) =>
                                 _VariablePartRow<K, T>(
                               sizes: widget.sizes,
@@ -115,7 +136,6 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
   @override
   void dispose() {
     super.dispose();
-
     normalController.dispose();
     fixedController.dispose();
   }

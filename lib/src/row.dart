@@ -8,8 +8,12 @@ abstract class _RowBuilder<K extends Comparable<K>, T> extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _RowBuilderState<K, T>();
 
-  List<Widget> buildColumns(BuildContext context, int index,
-      PagedDataTableController<K, T> controller, PagedDataTableThemeData theme);
+  List<Widget> buildColumns(
+    BuildContext context,
+    int index,
+    PagedDataTableController<K, T> controller,
+    PagedDataTableThemeData theme,
+  );
 }
 
 class _RowBuilderState<K extends Comparable<K>, T>
@@ -31,20 +35,17 @@ class _RowBuilderState<K extends Comparable<K>, T>
   @override
   Widget build(BuildContext context) {
     Widget child = Row(
-        children:
-            widget.buildColumns(context, widget.index, controller, theme));
-    var color = theme.rowColor?.call(widget.index);
+      children: widget.buildColumns(context, widget.index, controller, theme),
+    );
+    Color? color = theme.rowColor?.call(widget.index);
     if (selected && theme.selectedRow != null) {
       color = theme.selectedRow;
     }
-    if (color != null) {
-      child = DecoratedBox(
-        decoration: BoxDecoration(color: color),
-        child: child,
-      );
-    }
-
-    return SizedBox(height: theme.rowHeight, child: child);
+    return Container(
+      decoration: BoxDecoration(color: color),
+      height: theme.rowHeight,
+      child: child,
+    );
   }
 
   void _onRowChanged(int index, T value) {
@@ -127,31 +128,22 @@ class _VariablePartRow<K extends Comparable<K>, T> extends _RowBuilder<K, T> {
   }
 }
 
-Widget _buildCell<T>(BuildContext context, int index, T value, double width,
-    PagedDataTableThemeData theme, ReadOnlyTableColumn column) {
+Widget _buildCell<T>(
+  BuildContext context,
+  int index,
+  T value,
+  double width,
+  PagedDataTableThemeData theme,
+  ReadOnlyTableColumn column,
+) {
   Widget child = Container(
-    padding: theme.cellPadding,
-    margin: theme.padding,
     decoration: BoxDecoration(border: theme.cellBorderSide),
-    child: column.format.transform(column.build(context, value, index)),
+    width: width,
+    child: Container(
+      padding: theme.cellPadding,
+      margin: theme.padding,
+      child: column.format.transform(column.build(context, value, index)),
+    ),
   );
-
-  child = SizedBox(width: width, child: child);
-  // switch (column.size) {
-  //   case FixedColumnSize(:final size):
-  //     child = SizedBox(width: size, child: child);
-  //     availableWidth -= size;
-  //     break;
-  //   case FractionalColumnSize(:final fraction):
-  //     final size = totalWidth * fraction;
-  //     child = SizedBox(width: size, child: child);
-  //     availableWidth -= size;
-  //     break;
-  //   case RemainingColumnSize():
-  //     child = SizedBox(width: availableWidth, child: child);
-  //     availableWidth = 0;
-  //     break;
-  // }
-
   return child;
 }

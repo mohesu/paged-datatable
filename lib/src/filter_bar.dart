@@ -41,26 +41,11 @@ class _FilterBarState<K extends Comparable<K>, T>
                   Container(
                     padding: theme.cellPadding,
                     margin: theme.padding,
-                    child: Ink(
-                      child: InkWell(
-                        radius: 20,
-                        child: Tooltip(
-                          message: localizations.showFilterMenuTooltip,
-                          child: MouseRegion(
-                            cursor: controller._state == _TableState.fetching
-                                ? SystemMouseCursors.basic
-                                : SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTapDown:
-                                  controller._state == _TableState.fetching
-                                      ? null
-                                      : (details) =>
-                                          _showFilterOverlay(details, context),
-                              child: const Icon(Icons.filter_list_rounded),
-                            ),
-                          ),
-                        ),
-                      ),
+                    child: IconButton(
+                      onPressed: controller._state == _TableState.fetching
+                          ? null
+                          : () => _showFilterOverlay(context),
+                      icon: const Icon(Icons.filter_list_rounded),
                     ),
                   ),
 
@@ -85,12 +70,14 @@ class _FilterBarState<K extends Comparable<K>, T>
                                     size: 20,
                                   ),
                                   deleteButtonTooltipMessage:
-                                      "Remove filter", //localizations.removeFilterButtonText,
+                                      localizations.removeFilterButtonText,
                                   onDeleted: () {
                                     controller.removeFilter(e._filter.id);
                                   },
-                                  label: Text((e._filter as dynamic)
-                                      .chipFormatter(e.value)),
+                                  label: Text(
+                                    (e._filter as dynamic)
+                                        .chipFormatter(e.value),
+                                  ),
                                 ),
                               ),
                             )
@@ -117,8 +104,7 @@ class _FilterBarState<K extends Comparable<K>, T>
     return child;
   }
 
-  Future<void> _showFilterOverlay(
-      TapDownDetails details, BuildContext context) {
+  Future<void> _showFilterOverlay(BuildContext context) {
     final mediaWidth = MediaQuery.of(context).size.width;
     final bool isBottomSheet = mediaWidth < theme.filterDialogBreakpoint;
 
