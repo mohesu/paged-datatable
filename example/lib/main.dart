@@ -233,6 +233,7 @@ class _MainViewState extends State<MainView> {
                   ],
                 ),
                 fixedColumnCount: 1,
+                footerChild: Text("Total items: ${tableController.totalItems}"),
                 columns: [
                   RowSelectorColumn(),
                   TableColumn(

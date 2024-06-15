@@ -63,7 +63,7 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
   /// A custom widget to build in the footer, aligned to the left.
   ///
   /// Navigation widgets remain untouched.
-  final Widget Function(List<T>? selectedRows)? footerChild;
+  final Widget? footerChild;
 
   /// Additional widget to add at the right of the filter bar.
   final Widget? filterBarChild;
@@ -193,8 +193,7 @@ final class _PagedDataTableState<K extends Comparable<K>, T>
                   height: theme.footerHeight,
                   child: widget.footer ??
                       DefaultFooter<K, T>(
-                        child: widget.footerChild
-                            ?.call(tableController.selectedItems),
+                        child: widget.footerChild,
                       ),
                 ),
               ],
