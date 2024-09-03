@@ -66,6 +66,7 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
                     primary: false,
                     controller: fixedController,
                     itemCount: widget.controller._totalItems,
+                    physics: const ClampingScrollPhysics(),
                     prototypeItem: widget.prototypeItem ??
                         (widget.controller._totalItems > 0
                             ? _FixedPartRow<K, T>(
@@ -91,6 +92,7 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
                     child: ListView(
                       controller: widget.horizontalController,
                       scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
                       children: [
                         ConstrainedBox(
                           constraints: BoxConstraints(
@@ -101,6 +103,7 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
                           child: ListView.builder(
                             controller: normalController,
                             itemCount: widget.controller._totalItems,
+                            physics: const ClampingScrollPhysics(),
                             prototypeItem: widget.prototypeItem ??
                                 (widget.controller._totalItems > 0
                                     ? _VariablePartRow<K, T>(

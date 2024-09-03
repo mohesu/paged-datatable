@@ -53,6 +53,8 @@ abstract class TableFilter<T extends Object> {
 /// A [TableFilter] that renders a [TextFormField].
 final class TextTableFilter extends TableFilter<String> {
   final InputDecoration? decoration;
+  final void Function(String)? onFieldSubmitted;
+  final void Function()? onEditingComplete;
 
   const TextTableFilter({
     this.decoration,
@@ -61,6 +63,8 @@ final class TextTableFilter extends TableFilter<String> {
     required super.name,
     super.initialValue,
     super.enabled = true,
+    this.onFieldSubmitted,
+    this.onEditingComplete,
   });
 
   @override
@@ -73,6 +77,8 @@ final class TextTableFilter extends TableFilter<String> {
           state.value = newValue;
         }
       },
+      onFieldSubmitted: onFieldSubmitted,
+      onEditingComplete: onEditingComplete,
     );
   }
 }

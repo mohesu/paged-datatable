@@ -171,4 +171,7 @@ class _ScrollableColumns extends ScrollView {
 
   @override
   List<Widget> buildSlivers(BuildContext context) => children;
+
+  @override
+  ScrollPhysics? get physics => const ClampingScrollPhysics();
 }
