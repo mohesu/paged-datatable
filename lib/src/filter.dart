@@ -77,7 +77,12 @@ final class TextTableFilter extends TableFilter<String> {
           state.value = newValue;
         }
       },
-      onFieldSubmitted: onFieldSubmitted,
+      onFieldSubmitted: (value) {
+        if (value.isNotEmpty) {
+          state.value = value;
+        }
+        onFieldSubmitted?.call(value);
+      },
       onEditingComplete: onEditingComplete,
     );
   }
