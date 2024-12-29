@@ -39,14 +39,21 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
     super.initState();
 
     state = widget.controller._state;
-    widget.controller.addListener(() {
+    widget.controller.addListener(_setState);
+  }
+
+  /// A wrapper around the [setState] method
+  /// that allows us to add it as a listener
+  void _setState() {
+    if (mounted) {
       setState(() {});
-    });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = PagedDataTableTheme.of(context);
+
     return DefaultTextStyle(
       style: theme.cellTextStyle,
       child: ScrollConfiguration(
@@ -138,8 +145,10 @@ class _DoubleListRowsState<K extends Comparable<K>, T>
 
   @override
   void dispose() {
-    super.dispose();
     normalController.dispose();
     fixedController.dispose();
+    widget.controller.removeListener(_setState);
+
+    super.dispose();
   }
 }

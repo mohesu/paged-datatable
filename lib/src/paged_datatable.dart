@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:paged_datatable/paged_datatable.dart';
 import 'package:paged_datatable/src/linked_scroll_controller.dart';
 import 'package:paged_datatable/src/table_controller_notifier.dart';
+import 'package:paged_datatable/src/utils.dart';
 
 part 'column.dart';
 part 'column_widgets.dart';
@@ -47,7 +48,7 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
   final List<int>? pageSizes;
 
   /// The callback used to fetch new items.
-  final Fetcher<K, T> fetcher;
+  final dynamic fetcher;
 
   /// The amount of columns to fix, starting from the left.
   final int fixedColumnCount;
@@ -73,7 +74,22 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
 
   const PagedDataTable({
     required this.columns,
-    required this.fetcher,
+    required Fetcher<K, T> this.fetcher,
+    this.initialPage,
+    this.initialPageSize = 50,
+    this.pageSizes = const [10, 50, 100],
+    this.controller,
+    this.fixedColumnCount = 0,
+    this.configuration = const PagedDataTableConfiguration(),
+    this.footer,
+    this.filterBarChild,
+    this.filters = const <TableFilter>[],
+    super.key,
+  });
+
+  const PagedDataTable.expansible({
+    required this.columns,
+    required ExpansibleFetcher<K, T> this.fetcher,
     this.initialPage,
     this.initialPageSize = 50,
     this.pageSizes = const [10, 50, 100],
@@ -93,7 +109,6 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
 
 final class _PagedDataTableState<K extends Comparable<K>, T>
     extends State<PagedDataTable<K, T>> {
-  final verticalController = ScrollController();
   final linkedControllers = LinkedScrollControllerGroup();
   late final headerHorizontalController = linkedControllers.addAndGet();
   late final horizontalController = linkedControllers.addAndGet();
@@ -156,7 +171,8 @@ final class _PagedDataTableState<K extends Comparable<K>, T>
 
             return Column(
               children: [
-                _FilterBar<K, T>(child: widget.filterBarChild),
+                if (widget.filters.isNotEmpty || widget.filterBarChild != null)
+                  _FilterBar<K, T>(child: widget.filterBarChild),
 
                 _Header(
                   controller: tableController,
@@ -169,13 +185,15 @@ final class _PagedDataTableState<K extends Comparable<K>, T>
                 const Divider(height: 0, color: Color(0xFFD6D6D6)),
 
                 Expanded(
-                  child: _DoubleListRows(
-                    fixedColumnCount: widget.fixedColumnCount,
-                    columns: widget.columns,
-                    horizontalController: horizontalController,
-                    controller: tableController,
-                    configuration: widget.configuration,
-                    sizes: sizes,
+                  child: RepaintBoundary(
+                    child: _DoubleListRows(
+                      fixedColumnCount: widget.fixedColumnCount,
+                      columns: widget.columns,
+                      horizontalController: horizontalController,
+                      controller: tableController,
+                      configuration: widget.configuration,
+                      sizes: sizes,
+                    ),
                   ),
                 ),
 
@@ -206,25 +224,65 @@ final class _PagedDataTableState<K extends Comparable<K>, T>
 
   @override
   void dispose() {
-    super.dispose();
-    verticalController.dispose();
     horizontalController.dispose();
     headerHorizontalController.dispose();
 
     if (selfConstructedController) {
       tableController.dispose();
     }
+    super.dispose();
   }
 
   List<double> _calculateColumnWidth(double maxWidth) {
     final sizes =
-        List.generate(widget.columns.length, (index) => 0.0, growable: false);
-    double availableWidth = maxWidth;
+        List<double>.filled(widget.columns.length, 0.0, growable: false);
+
+    double totalFixedWidth = 0.0;
+    double totalFraction = 0.0;
+    int remainingColumnCount = 0;
+    double totalFractionalWidth = 0.0;
+
+    // First pass to determine widths and types of columns
     for (int i = 0; i < widget.columns.length; i++) {
       final column = widget.columns[i];
-      final columnSize = column.size.calculateConstraints(availableWidth);
-      availableWidth -= columnSize;
-      sizes[i] = columnSize;
+      if (column.size.isFixed) {
+        final columnSize = column.size.calculateConstraints(maxWidth);
+        totalFixedWidth += columnSize;
+      } else {
+        totalFraction += column.size.fraction;
+
+        // Handle this special case
+        if (column.size is RemainingColumnSize) {
+          remainingColumnCount++;
+        }
+      }
+    }
+
+    // Ensure totalFraction is within a valid range to prevent overflow
+    assert(totalFraction <= 1.0,
+        "Total fraction exceeds 1.0, which means the columns will overflow.");
+
+    double remainingWidth = maxWidth -
+        totalFixedWidth; // Calculate remaining width after fixed sizes are allocated
+    totalFractionalWidth =
+        remainingWidth * totalFraction; // Re-calculate total fractional width
+    remainingWidth -=
+        totalFractionalWidth; // Adjust remaining width to exclude fractional columns' widths for RemainingColumnSize
+    final remainingColumnWidth = remainingColumnCount > 0.0
+        ? remainingWidth / remainingColumnCount
+        : 0.0;
+
+    // Now calculate and assign column sizes
+    for (int i = 0; i < widget.columns.length; i++) {
+      final column = widget.columns[i];
+      if (column.size.isFixed) {
+        // Pass totalFixedWidth but the ColumnSize should don't care about it because its a fixed size.
+        sizes[i] = column.size.calculateConstraints(totalFixedWidth);
+      } else if (column.size is RemainingColumnSize) {
+        sizes[i] = remainingColumnWidth;
+      } else {
+        sizes[i] = totalFractionalWidth * column.size.fraction / totalFraction;
+      }
     }
 
     return sizes;

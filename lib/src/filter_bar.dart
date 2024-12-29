@@ -140,14 +140,16 @@ class _FilterBarState<K extends Comparable<K>, T>
   }
 
   void _onChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
-    super.dispose();
     chipsListController.dispose();
     controller.removeListener(_onChanged);
+    super.dispose();
   }
 }
 
