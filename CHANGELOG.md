@@ -1,3 +1,7 @@
+## 2.2.1
+
+- Merge dev branch into main 
+
 ## 2.2.0-dev1.1
 
 This does not include any new feature, it just adds the documentation for expansible rows.

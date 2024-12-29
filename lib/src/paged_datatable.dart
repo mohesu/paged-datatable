@@ -85,6 +85,7 @@ final class PagedDataTable<K extends Comparable<K>, T> extends StatefulWidget {
     this.filterBarChild,
     this.filters = const <TableFilter>[],
     super.key,
+    this.footerChild,
   });
 
   const PagedDataTable.expansible({

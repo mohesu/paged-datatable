@@ -115,7 +115,7 @@ class _SimplePagedDataTableState extends State<SimplePagedDataTable> {
         controller: tableController,
         initialPageSize: 100,
         configuration: const PagedDataTableConfiguration(),
-        pageSizes: const [10, 20, 50, 100],
+        pageSizes: const [10, 20, 50, 100, 500, 1000, 5000],
         fetcher: (pageSize, sortModel, filterModel, pageToken) async {
           final data = await PostsRepository.getPosts(
             pageSize: pageSize,

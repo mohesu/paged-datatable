@@ -34,7 +34,9 @@ class _RowBuilderState<K extends Comparable<K>, T>
     super.initState();
 
     expandController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 400));
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
     final Animation<double> curve = CurvedAnimation(
       parent: expandController,
       curve: Curves.fastOutSlowIn,
@@ -67,20 +69,21 @@ class _RowBuilderState<K extends Comparable<K>, T>
   @override
   Widget build(BuildContext context) {
     Widget child = Row(
-      children: widget.buildColumns(context, widget.index, controller, theme),
+      children: widget.buildCells(context, widget.index, controller, theme),
     );
     Color? color = theme.rowColor?.call(widget.index);
 
     if (selected && theme.selectedRow != null) {
       color = theme.selectedRow;
     }
-    return Container(
-      decoration: BoxDecoration(color: color),
-      height: theme.rowHeight,
-      child: child,
-    );
-  }
 
+    if (color != null) {
+      return Container(
+        decoration: BoxDecoration(color: color),
+        height: theme.rowHeight,
+        child: child,
+      );
+    }
     child = Column(
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -94,12 +97,19 @@ class _RowBuilderState<K extends Comparable<K>, T>
               height: theme.rowHeight * collapsedRows!.length,
               child: Column(
                 children: collapsedRows!
-                    .mapIndexed((index, collapsedRowItem) => SizedBox(
-                          height: theme.rowHeight,
-                          child: Row(
-                              children: widget.buildCollapsedCells(
-                                  context, index, collapsedRowItem, theme)),
-                        ))
+                    .mapIndexed(
+                      (index, collapsedRowItem) => SizedBox(
+                        height: theme.rowHeight,
+                        child: Row(
+                          children: widget.buildCollapsedCells(
+                            context,
+                            index,
+                            collapsedRowItem,
+                            theme,
+                          ),
+                        ),
+                      ),
+                    )
                     .toList(growable: false),
               ),
             ),
